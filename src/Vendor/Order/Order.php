@@ -320,5 +320,4 @@ final class Order
             throw new \Exception("lastStatusChange property should be DateTime RFC3339 format, '$value' found");
         }
     }
-
 }
