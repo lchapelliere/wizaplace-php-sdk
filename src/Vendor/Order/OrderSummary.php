@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace Wizaplace\SDK\Vendor\Order;
 
+use Wizaplace\SDK\Vendor\Order\Order as VendorOrder;
+
 /**
  * Class OrderSummary
  * @package Wizaplace\SDK\Vendor\Order
@@ -43,6 +45,9 @@ final class OrderSummary
     /** @var int  */
     private $companyId;
 
+    /** @var \DateTimeImmutable */
+    private $lastStatusChange;
+
     /**
      * @internal
      *
@@ -62,6 +67,7 @@ final class OrderSummary
         $this->customerUserId = $data['user_id'];
         $this->basketId = $data['basket_id'];
         $this->total = $data['total'];
+        $this->lastStatusChange = VendorOrder::denormalizeLastStatusChange($data['last_status_change'] ?? null);
     }
 
     /**
@@ -142,5 +148,13 @@ final class OrderSummary
     public function getTotal(): float
     {
         return $this->total;
+    }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getLastStatusChange(): ?\DateTimeImmutable
+    {
+        return $this->lastStatusChange;
     }
 }

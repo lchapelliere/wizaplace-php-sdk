@@ -77,19 +77,14 @@ class OrderServiceTest extends ApiTestCase
         $orders = $this->buildVendorOrderService()->listOrders();
 
         $this->assertContainsOnly(OrderSummary::class, $orders);
-        $this->assertCount(2, $orders);
+        $this->assertEquals(true, count($orders) >= 2);
 
-        $order = $orders[0];
-        $this->assertSame(5, $order->getOrderId());
-        $this->assertSame(7, $order->getCustomerUserId());
-        $this->assertSame(3, $order->getCompanyId());
-        $this->assertSame('customer-1@world-company.com', $order->getCustomerEmail());
-        $this->assertSame('Paul', $order->getCustomerFirstName());
-        $this->assertSame('Martin', $order->getCustomerLastName());
-        $this->assertGreaterThan(1500000000, $order->getCreatedAt()->getTimestamp());
-        $this->assertTrue(OrderStatus::STANDBY_VENDOR()->equals($order->getStatus()));
+        // To fix random sort
+        usort($orders, function ($a, $b) {
+            return $a->getOrderId() <=> $b->getOrderId();
+        });
 
-        $order = $orders[1];
+        $order = array_shift($orders);
         $this->assertSame(4, $order->getOrderId());
         $this->assertSame(7, $order->getCustomerUserId());
         $this->assertSame(3, $order->getCompanyId());
@@ -98,6 +93,19 @@ class OrderServiceTest extends ApiTestCase
         $this->assertSame('Martin', $order->getCustomerLastName());
         $this->assertGreaterThan(1500000000, $order->getCreatedAt()->getTimestamp());
         $this->assertTrue(OrderStatus::COMPLETED()->equals($order->getStatus()));
+        $this->assertInstanceOf(\DateTimeImmutable::class, $order->getLastStatusChange());
+
+        $order = array_shift($orders);
+        $this->assertSame(5, $order->getOrderId());
+        $this->assertSame(7, $order->getCustomerUserId());
+        $this->assertSame(3, $order->getCompanyId());
+        $this->assertSame('customer-1@world-company.com', $order->getCustomerEmail());
+        $this->assertSame('Paul', $order->getCustomerFirstName());
+        $this->assertSame('Martin', $order->getCustomerLastName());
+        $this->assertGreaterThan(1500000000, $order->getCreatedAt()->getTimestamp());
+        $this->assertTrue(OrderStatus::STANDBY_VENDOR()->equals($order->getStatus()));
+        $this->assertTrue(OrderStatus::STANDBY_VENDOR()->equals($order->getStatus()));
+        $this->assertInstanceOf(\DateTimeImmutable::class, $order->getLastStatusChange());
     }
 
     public function testListOrdersWithFilter(): void
@@ -129,7 +137,7 @@ class OrderServiceTest extends ApiTestCase
         $this->assertSame('Martin', $order->getCustomerLastName());
         $this->assertSame(66.7, $order->getTotal());
         $this->assertSame(0.0, $order->getTaxSubtotal());
-        $this->assertSame(0.0, $order->getDiscountAmount());
+        $this->assertSame(1.2, $order->getDiscountAmount());
         $this->assertSame(0.0, $order->getShippingCost());
         $this->assertSame([], $order->getShipmentsIds());
         $this->assertSame('', $order->getInvoiceNumber());
@@ -137,6 +145,7 @@ class OrderServiceTest extends ApiTestCase
         $this->assertTrue(OrderStatus::STANDBY_VENDOR()->equals($order->getStatus()));
         $this->assertTrue($order->needsShipping());
         $this->assertGreaterThan(1500000000, $order->getCreatedAt()->getTimestamp());
+        $this->assertInstanceOf(\DateTimeImmutable::class, $order->getLastStatusChange());
 
         $shippingAddress = $order->getShippingAddress();
         $this->assertInstanceOf(OrderAddress::class, $shippingAddress);
@@ -276,6 +285,35 @@ class OrderServiceTest extends ApiTestCase
         );
 
         $this->assertInstanceOf(MondialRelayLabel::class, $result);
+    }
+
+    /**
+     * @dataProvider badLastStatusChangeProvider
+     */
+    public function testDenormalizeLastStatusChange($lastStatusChange, $expected): void
+    {
+        $orderData = \json_decode('{"order_id":5,"company_id":3,"user_id":7,"basket_id":"c8512874-2a4a-4ed3-8e66-708c2fa54c1a","total":66.7,"discount":1.2,"shipping_cost":0.0,"timestamp":1551876306,"status":"P","notes":"","promotions":[],"b_firstname":"Paul","b_lastname":"Martin","b_company":"","b_address":"40 rue Laure Diebold","b_address_2":"3\u00e8me \u00e9tage","b_city":"Lyon","b_country":"FR","b_zipcode":"69009","b_phone":"01234567890","s_firstname":"Paul","s_lastname":"Martin","s_company":"","s_address":"40 rue Laure Diebold","s_address_2":"3\u00e8me \u00e9tage","s_city":"Lyon","s_country":"FR","s_zipcode":"69009","s_phone":"01234567890","s_pickup_point_id":"","email":"customer-1@world-company.com","decline_reason":null,"invoice_date":"","products":{"2085640488":{"item_id":"2085640488","product_id":1,"price":67.9,"amount":1,"comment":"","extra":{"combinations":null},"discount":0.0,"green_tax":"0.00","shipped_amount":0,"shipment_amount":"1","selected_code":"978020137962","supplier_ref":"INFO-001"}},"taxes":{"2":{"rate_type":"P","rate_value":"2.100","price_includes_tax":"Y","regnumber":"445711","priority":0,"tax_subtotal":1.3966,"description":"TVA 2.1%","applies":{"P_2085640488":1.3966}}},"tax_subtotal":0.0,"need_shipping":true,"shipping":[{"shipping_id":1,"status":"A","shipping":"TNT Express","delivery_time":"24h","rates":[{"amount":0,"value":null},{"amount":1,"value":null}],"specific_rate":false,"description":"<p>Code : TNT01<\/p>\r\n<p>Type : Livraison &agrave; domicile <br \/> Mode : EXP<\/p>\r\n<p>Tel : 08 25 03 30 33<\/p>\r\n<p>Email :<\/p>\r\n<p>Adresse : 58 Avenue Leclerc <br \/> 69007Lyon<br \/>France<\/p>\r\n<p>URL tracking : http:\/\/www.tnt.fr\/suivi<\/p>\r\n<p>Service : Transport express au domicile, au travail ou en relais colis.<\/p>"}],"shipment_ids":[],"invoice_number":"","last_status_change":"2019-03-06T13:45:36+01:00","customer_firstname":"Paul","customer_lastname":"Martin","payment":{"type":"manual","processorName":null,"commitmentDate":null,"processorInformation":{}},"workflow":"workflow_order_validation_pending_vendor_validation_processing"}', true);
+        $orderData['last_status_change'] = $lastStatusChange;
+
+        if ($expected === \Throwable::class) {
+            $this->expectException(\Throwable::class);
+            new Order($orderData);
+        } else {
+            $this->assertEquals((new Order($orderData))->getLastStatusChange(), $expected);
+        }
+    }
+
+    public function badLastStatusChangeProvider(): array
+    {
+        return [
+            [null, null],
+            ['', null],
+            [0, \Throwable::class],
+            ['0', \Throwable::class],
+            ['qsfsdfsdf', \Throwable::class],
+            ['0000-00-00 00:00:00', null],
+            ['0000-00-00T00:00:00Z', null],
+        ];
     }
 
     private function buildVendorOrderService(string $email = 'vendor@world-company.com', string $password = 'password-vendor'): OrderService

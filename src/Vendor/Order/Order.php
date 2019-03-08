@@ -81,6 +81,9 @@ final class Order
     /** @var int */
     private $companyId;
 
+    /** @var \DateTimeImmutable */
+    private $lastStatusChange;
+
     /**
      * @internal
      *
@@ -118,6 +121,7 @@ final class Order
             return new OrderItem($itemData);
         }, $data['products']);
         $this->comment = $data['notes'] ?? '';
+        $this->lastStatusChange = self::denormalizeLastStatusChange($data['last_status_change'] ?? null);
     }
 
     /**
@@ -295,4 +299,26 @@ final class Order
     {
         return $this->comment;
     }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getLastStatusChange(): ?\DateTimeImmutable
+    {
+        return $this->lastStatusChange;
+    }
+
+    public static function denormalizeLastStatusChange($value)
+    {
+        if (is_null($value) === true || $value === "") {
+            return null;
+        }
+
+        try {
+            return new \DateTimeImmutable($value);
+        } catch (\Throwable $e) {
+            throw new \Exception("lastStatusChange property should be DateTime RFC3339 format, '$value' found");
+        }
+    }
+
 }
