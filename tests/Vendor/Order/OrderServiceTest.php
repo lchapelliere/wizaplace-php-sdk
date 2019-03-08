@@ -288,7 +288,7 @@ class OrderServiceTest extends ApiTestCase
     }
 
     /**
-     * @dataProvider badLastStatusChangeProvider
+     * @dataProvider lastStatusChangeProvider
      */
     public function testDenormalizeLastStatusChange($lastStatusChange, $expected): void
     {
@@ -311,7 +311,7 @@ class OrderServiceTest extends ApiTestCase
         }
     }
 
-    public function badLastStatusChangeProvider(): array
+    public function lastStatusChangeProvider(): array
     {
         return [
             [null, null],
