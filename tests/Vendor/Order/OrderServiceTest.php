@@ -77,7 +77,7 @@ class OrderServiceTest extends ApiTestCase
         $orders = $this->buildVendorOrderService()->listOrders();
 
         $this->assertContainsOnly(OrderSummary::class, $orders);
-        $this->assertEquals(true, count($orders) >= 2);
+        $this->assertTrue(count($orders) >= 2);
 
         // To fix random sort
         usort($orders, function ($a, $b) {
