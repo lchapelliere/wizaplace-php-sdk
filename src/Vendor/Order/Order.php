@@ -81,7 +81,7 @@ final class Order
     /** @var int */
     private $companyId;
 
-    /** @var \DateTimeImmutable */
+    /** @var null|\DateTimeImmutable */
     private $lastStatusChange;
 
     /**
@@ -121,7 +121,7 @@ final class Order
             return new OrderItem($itemData);
         }, $data['products']);
         $this->comment = $data['notes'] ?? '';
-        $this->lastStatusChange = self::denormalizeLastStatusChange($data['last_status_change'] ?? null);
+        $this->lastStatusChange = static::denormalizeLastStatusChange($data['last_status_change'] ?? null);
     }
 
     /**
@@ -308,7 +308,7 @@ final class Order
         return $this->lastStatusChange;
     }
 
-    public static function denormalizeLastStatusChange($value)
+    public static function denormalizeLastStatusChange(?string $value): ?\DateTimeImmutable
     {
         if (is_null($value) === true || $value === "") {
             return null;

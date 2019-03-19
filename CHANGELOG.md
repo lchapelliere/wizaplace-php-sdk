@@ -15,6 +15,7 @@
 - Added `\Wizaplace\SDK\Pim\MultiVendorProduct\MultiVendorProductService::getListMultiVendorProduct`
 - Added `\Wizaplace\SDK\Pim\Product\ProductListFilter:byIds`
 - Added `\Wizaplace\SDK\Pim\Product\ProductListFilter:bySupplierReferences`
+- Added `\Wizaplace\SDK\Pim\Product\ProductListFilter:byProductCodes`
 - Added `lastStatusChange` property to `Vendor/Order` and `Vendor/Order/OrderSummary`
 
 ## 1.49.0
