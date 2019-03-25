@@ -45,7 +45,7 @@ final class OrderSummary
     /** @var int  */
     private $companyId;
 
-    /** @var \DateTimeImmutable */
+    /** @var \DateTimeImmutable|null */
     private $lastStatusChange;
 
     /**
@@ -151,7 +151,7 @@ final class OrderSummary
     }
 
     /**
-     * @return \DateTimeImmutable
+     * @return \DateTimeImmutable|null
      */
     public function getLastStatusChange(): ?\DateTimeImmutable
     {

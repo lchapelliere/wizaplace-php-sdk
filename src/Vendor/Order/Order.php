@@ -301,13 +301,17 @@ final class Order
     }
 
     /**
-     * @return \DateTimeImmutable
+     * @return \DateTimeImmutable|null
      */
     public function getLastStatusChange(): ?\DateTimeImmutable
     {
         return $this->lastStatusChange;
     }
 
+    /**
+     * @param string|null $value
+     * @return \DateTimeImmutable|null
+     */
     public static function denormalizeLastStatusChange(?string $value): ?\DateTimeImmutable
     {
         if (is_null($value) === true || $value === "") {
